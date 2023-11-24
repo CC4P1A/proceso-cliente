@@ -4,11 +4,17 @@ import { FaBitcoin } from 'react-icons/fa';
 const HOST = '127.0.0.1';
 const PORT = 60000;
 
+const messageMode = {
+    L: 'Se encontro un registro',
+    A: 'Se realizo una transaccion con exito',
+    F: 'Lo sentimos, algo salio mal :(',
+} 
+
 export default function App() {
 	const [socket, setSocket] = useState(null);
-	const [dataReceive, setDataReceive] = useState('');
-    const [read, setRead] = useState('');
-    const [transaction, setTransaction] = useState('');
+	const [messageReceive, setMessageReceive] = useState('');
+    const [data, setData] = useState(null);
+    const [openModal, setOpenModal] = useState(true);
 
     // search input
     const [searchInput, setSearchInput] = useState('');
@@ -37,7 +43,7 @@ export default function App() {
 
 				// Message event listener
 				socket.removeEventListener('message', (event) => {
-					setDataReceive(event.data);
+					setMessageReceive(event.data);
 					console.log('Mensaje recibido:', event.data);
 				});
 
@@ -54,16 +60,12 @@ export default function App() {
 	}, [socket]);
 
     useEffect(() => {
-        if (dataReceive === ''){
+        if (messageReceive === ''){
             return;
         }
-        const data = JSON.parse(dataReceive);
-        if (data.type === 'L') {
-            setRead(data);
-        } else if (data.type === 'A') {
-            setTransaction(data);
-        }
-    }, [dataReceive]);
+        const data = JSON.parse(messageReceive);
+        setData(data);
+    }, [messageReceive]);
 
 	const handleConnect = () => {
 		// Create a new socket and connect to the server
@@ -76,7 +78,7 @@ export default function App() {
 
 		// When the socket receives data, log it to the console
 		newSocket.addEventListener('message', (event) => {
-			setDataReceive(event.data);
+			setMessageReceive(event.data);
 			console.log('Mensaje recibido:', event.data);
 		});
 
@@ -175,13 +177,6 @@ export default function App() {
 							Search
 						</button>
 					</form>
-                    {
-                        read !== '' ? (
-                            <div>
-                                <p>Account: {read.origin_account} - Balance: {read.origin_amount}</p>
-                            </div>
-                        ) : null
-                    }
 				</section>
 				<section className="container max-w-screen-md mx-auto flex flex-col gap-4 py-8">
 					<h2 className="text-2xl font-medium text-purple-500">Create new transaction</h2>
@@ -234,6 +229,32 @@ export default function App() {
 						</div>
 					</form>
 				</section>
+                <section className={`${openModal ? 'flex' : 'hidden'}`}>
+                    <div>
+                        {data && <h1>{messageMode[data.type]}</h1>}
+                        {data && data.type === 'L' && (
+                            <div>
+                                <p>ID: {data.id}</p>
+                                <p>Cuenta buscada: {data.origin_account}</p>
+                                <p>Balance: {data.origin_amount}</p>
+                            </div>
+                        )}
+                        {data && data.type === 'A' && (
+                            <div>
+                                <p>ID: {data.id}</p>
+                                <p>Cuenta de origen: {data.origin_account}</p>
+                                <p>Balance Nuevo: {data.origin_amount}</p>
+                                <p>Cuenta de destino: {data.destination_account}</p>
+                                <p>Balance Nuevo: {data.destination_amount}</p>
+                            </div>
+                        )}
+                        {data && data.type === 'F' && (
+                            <div>
+                                <p>{data.error}</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
 			</main>
 		</>
 	);
