@@ -5,32 +5,31 @@ const HOST = '127.0.0.1';
 const PORT = 60000;
 
 const messageMode = {
-    L: 'Se encontro un registro',
-    A: 'Se realizo una transaccion con exito',
-    F: 'Lo sentimos, algo salio mal :(',
-} 
+	L: 'Se encontro un registro',
+	A: 'Se realizo una transaccion con exito',
+	F: 'Lo sentimos, algo salio mal :(',
+};
 
 export default function App() {
 	const [socket, setSocket] = useState(null);
 	const [messageReceive, setMessageReceive] = useState('');
-    const [data, setData] = useState(null);
-    const [openModal, setOpenModal] = useState(true);
+	const [history, setHistory] = useState([]);
 
-    // search input
-    const [searchInput, setSearchInput] = useState('');
+	// search input
+	const [searchInput, setSearchInput] = useState('');
 	const searchInputRef = useRef('');
 
-    // from input
-    const [fromInput, setFromInput] = useState('');
-    const fromInputRef = useRef('');
+	// from input
+	const [fromInput, setFromInput] = useState('');
+	const fromInputRef = useRef('');
 
-    // to input
-    const [toInput, setToInput] = useState('');
-    const toInputRef = useRef('');
+	// to input
+	const [toInput, setToInput] = useState('');
+	const toInputRef = useRef('');
 
-    // amount input
-    const [amountInput, setAmountInput] = useState('');
-    const amountInputRef = useRef('');
+	// amount input
+	const [amountInput, setAmountInput] = useState('');
+	const amountInputRef = useRef('');
 
 	useEffect(() => {
 		// Close the socket when the component unmounts
@@ -59,13 +58,13 @@ export default function App() {
 		};
 	}, [socket]);
 
-    useEffect(() => {
-        if (messageReceive === ''){
-            return;
-        }
-        const data = JSON.parse(messageReceive);
-        setData(data);
-    }, [messageReceive]);
+	useEffect(() => {
+		if (messageReceive === '') {
+			return;
+		}
+		const data = JSON.parse(messageReceive);
+		setHistory([data, ...history]);
+	}, [messageReceive]);
 
 	const handleConnect = () => {
 		// Create a new socket and connect to the server
@@ -104,48 +103,48 @@ export default function App() {
 		}
 	};
 
-    const handleSendTransaction = (e) => {
-        // Prevent the form submitting reload the page
-        e.preventDefault();
-        // Send a message to the server when the user submits the form
-        if (socket && fromInputRef.current !== '' && toInputRef.current !== '' && amountInputRef.current !== '') {
-            const data = {
-                type: 'A',
-                origin_account: fromInputRef.current,
-                destination_account: toInputRef.current,
-                amount: amountInputRef.current,
-            };
-            socket.send(JSON.stringify(data));
-            console.log('Message sent:', data);
-        }
-    }
+	const handleSendTransaction = (e) => {
+		// Prevent the form submitting reload the page
+		e.preventDefault();
+		// Send a message to the server when the user submits the form
+		if (socket && fromInputRef.current !== '' && toInputRef.current !== '' && amountInputRef.current !== '') {
+			const data = {
+				type: 'A',
+				origin_account: fromInputRef.current,
+				destination_account: toInputRef.current,
+				amount: amountInputRef.current,
+			};
+			socket.send(JSON.stringify(data));
+			console.log('Message sent:', data);
+		}
+	};
 
 	const handleChangeSearch = (e) => {
 		const value = e.target.value;
-        setSearchInput(value);
+		setSearchInput(value);
 		searchInputRef.current = value;
 	};
 
-    const handleChangeFrom = (e) => {
-        const value = e.target.value;
-        setFromInput(value);
-        fromInputRef.current = value;
-    }
+	const handleChangeFrom = (e) => {
+		const value = e.target.value;
+		setFromInput(value);
+		fromInputRef.current = value;
+	};
 
-    const handleChangeTo = (e) => {
-        const value = e.target.value;
-        setToInput(value);
-        toInputRef.current = value;
-    }
+	const handleChangeTo = (e) => {
+		const value = e.target.value;
+		setToInput(value);
+		toInputRef.current = value;
+	};
 
-    const handleChangeAmount = (e) => {
-        const value = e.target.value;
-        setAmountInput(value);
-        amountInputRef.current = value;
-    }
+	const handleChangeAmount = (e) => {
+		const value = e.target.value;
+		setAmountInput(value);
+		amountInputRef.current = value;
+	};
 
 	return (
-		<>
+		<div className="flex flex-col gap-4 h-screen">
 			<header className="bg-gray-50 shadow-sm">
 				<nav className="container max-w-screen-md mx-auto flex justify-between gap-4 py-4">
 					<a href="/" className="flex items-center gap-2 text-purple-500">
@@ -160,8 +159,8 @@ export default function App() {
 					</button>
 				</nav>
 			</header>
-			<main className="text-gray-500">
-				<section className="container max-w-screen-md mx-auto flex flex-col gap-4 py-8">
+			<main className="flex flex-col flex-grow gap-6 text-gray-500 py-4">
+				<section className="container max-w-screen-md mx-auto flex flex-col gap-4">
 					<h2 className="text-2xl font-medium text-purple-500">Search for id</h2>
 					<form className="flex flex-grow gap-4" onSubmit={(e) => handleSearch(e)}>
 						<input
@@ -178,9 +177,9 @@ export default function App() {
 						</button>
 					</form>
 				</section>
-				<section className="container max-w-screen-md mx-auto flex flex-col gap-4 py-8">
+				<section className="container max-w-screen-md mx-auto flex flex-col gap-4">
 					<h2 className="text-2xl font-medium text-purple-500">Create new transaction</h2>
-					<form className="flex  gap-4" onSubmit={(e)=>handleSendTransaction(e)}>
+					<form className="flex  gap-4" onSubmit={(e) => handleSendTransaction(e)}>
 						<div className="flex flex-col gap-2">
 							<label htmlFor="from" className="block">
 								From
@@ -188,8 +187,8 @@ export default function App() {
 							<input
 								type="text"
 								id="from"
-                                value={fromInput}
-                                onChange={handleChangeFrom}
+								value={fromInput}
+								onChange={handleChangeFrom}
 								className="w-full px-4 py-2 rounded-md border border-purple-200 focus:outline-none"
 								placeholder="Wallet address"
 							/>
@@ -201,8 +200,8 @@ export default function App() {
 							<input
 								type="text"
 								id="to"
-                                value={toInput}
-                                onChange={handleChangeTo}
+								value={toInput}
+								onChange={handleChangeTo}
 								className="w-full px-4 py-2 rounded-md border border-purple-200 focus:outline-none"
 								placeholder="Wallet address"
 							/>
@@ -214,8 +213,8 @@ export default function App() {
 							<input
 								type="text"
 								id="amount"
-                                value={amountInput}
-                                onChange={handleChangeAmount}
+								value={amountInput}
+								onChange={handleChangeAmount}
 								className="flex-grow w-full px-4 py-2 rounded-md border border-purple-200 focus:outline-none"
 								placeholder="Amount"
 							/>
@@ -229,33 +228,39 @@ export default function App() {
 						</div>
 					</form>
 				</section>
-                <section className={`${openModal ? 'flex' : 'hidden'}`}>
-                    <div>
-                        {data && <h1>{messageMode[data.type]}</h1>}
-                        {data && data.type === 'L' && (
-                            <div>
-                                <p>ID: {data.id}</p>
-                                <p>Cuenta buscada: {data.origin_account}</p>
-                                <p>Balance: {data.origin_amount}</p>
-                            </div>
-                        )}
-                        {data && data.type === 'A' && (
-                            <div>
-                                <p>ID: {data.id}</p>
-                                <p>Cuenta de origen: {data.origin_account}</p>
-                                <p>Balance Nuevo: {data.origin_amount}</p>
-                                <p>Cuenta de destino: {data.destination_account}</p>
-                                <p>Balance Nuevo: {data.destination_amount}</p>
-                            </div>
-                        )}
-                        {data && data.type === 'F' && (
-                            <div>
-                                <p>{data.error}</p>
-                            </div>
-                        )}
-                    </div>
-                </section>
+				<section className="rounded-md shadow-inner container max-w-screen-md mx-auto flex flex-col gap-4 bg-purple-100">
+					<ul className="flex flex-col gap-4 p-8 h-[400px] overflow-y-scroll">
+                        {
+                            history.length > 0 && history.map((item, index) => (
+                                <li key={index} className="flex flex-col gap-2 px-6 py-3 w-full rounded-md bg-white">
+                                    <p className="text-purple-500 font-bold">{messageMode[item.type]}</p>
+                                    {item.type === 'L' && (
+                                        <div>
+                                            <p>ID: {item.id}</p>
+                                            <p>Cuenta buscada: {item.origin_account}</p>
+                                            <p>Balance: {item.origin_amount}</p>
+                                        </div>
+                                    )}
+                                    {item.type === 'A' && (
+                                        <div>
+                                            <p>ID: {item.id}</p>
+                                            <p>Cuenta de origen: {item.origin_account}</p>
+                                            <p>Balance Nuevo: {item.origin_amount}</p>
+                                            <p>Cuenta de destino: {item.destination_account}</p>
+                                            <p>Balance Nuevo: {item.destination_amount}</p>
+                                        </div>
+                                    )}
+                                    {item.type === 'F' && (
+                                        <div>
+                                            <p>{item.error}</p>
+                                        </div>
+                                    )}
+                                </li>
+                            ))
+                        }
+					</ul>
+				</section>
 			</main>
-		</>
+		</div>
 	);
 }
